@@ -1,0 +1,31 @@
+---
+# Название playbook: Удаление Nginx
+- name: Удалить Nginx
+  hosts: remote
+  become: yes  # Использование sudo для выполнения команд
+  tasks:
+    # Остановка и отключение службы Nginx
+    - name: Остановить и отключить службу Nginx
+      service:
+        name: nginx
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    # Удаление пакета Nginx
+    - name: Удалить пакет Nginx
+      apt:
+        name: nginx
+        state: absent
+        purge: yes
+      when: ansible_os_family == "Debian"
+
+    # Удаление конфигурационных файлов Nginx
+    - name: Удалить конфигурационные файлы Nginx
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/nginx
+        - /var/log/nginx
+      ignore_errors: yes

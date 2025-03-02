@@ -1,0 +1,20 @@
+# inventory
+
+[local]
+localhost ansible_connection=local ansible_python_interpreter=/usr/bin/python3.12
+
+[windows]
+172.23.80.1
+
+[windows:vars]
+ansible_user=valar
+ansible_password=1
+ansible_port=5986
+ansible_connection=winrm
+ansible_winrm_transport=basic
+ansible_winrm_server_cert_validation=ignore
+
+[remote]
+webserver ansible_host=92.53.107.194 ansible_user=root ansible_ssh_private_key_file=~/.ssh/timeweb_cloud_20250226
+
+

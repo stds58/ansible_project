@@ -1,0 +1,47 @@
+---
+# Название playbook: Установка Docker
+- name: Установить Docker
+  hosts: remote
+  become: yes  # Использование sudo для выполнения команд
+  tasks:
+    # Добавление официального GPG-ключа Docker
+    - name: Добавить GPG-ключ Docker
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      when: ansible_os_family == "Debian"
+
+    # Добавление репозитория Docker
+    - name: Добавить репозиторий Docker
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+      when: ansible_os_family == "Debian"
+
+    # Установка Docker CE
+    - name: Установить Docker CE
+      apt:
+        name: docker-ce
+        state: present
+      when: ansible_os_family == "Debian"
+
+    # Запуск и включение службы Docker
+    - name: Запустить и включить службу Docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    # Добавление текущего пользователя в группу docker
+    - name: Добавить текущего пользователя в группу docker
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+      notify: Перезапуск Docker
+
+  handlers:
+    - name: Перезапуск Docker
+      service:
+        name: docker
+        state: restarted

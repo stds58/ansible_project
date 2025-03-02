@@ -1,0 +1,25 @@
+---
+# Название playbook: Удаление Docker, Nginx и всех связанных компонентов
+# wsl ansible-playbook -i inventory site_uninstall_all.yml
+# Если вы хотите удалить зависимости: wsl ansible-playbook -i inventory site_uninstall_all.yml -e "purge_dependencies=true"
+- name: Удалить Docker
+  import_playbook: playbooks/docker/uninstall.yml
+
+- name: Удалить Nginx
+  import_playbook: playbooks/nginx/uninstall.yml
+
+- name: Удалить общие зависимости (опционально)
+  hosts: remote
+  become: yes
+  tasks:
+    # Удаление общих зависимостей
+    - name: Удалить общие зависимости (apt-utils, ca-certificates, curl)
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: absent
+        purge: yes
+      when: "'purge_dependencies' in ansible_play_batch"  # Условие для удаления зависимостей

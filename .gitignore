@@ -1,0 +1,72 @@
+# Исключение временных файлов
+*.retry
+*.tmp
+*~
+*.swp
+*.swo
+*.swn
+*.un~
+Session.vim
+
+# Исключение Python-файлов и кэша
+*/__pycache__
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Исключение логов
+*.log
+
+# Исключение секретных данных
+.vault_pass
+vault_password_file
+*.vault
+
+# Исключение файлов, созданных IDE/редакторами
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+# Другие IDE
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Vim временные файлы
+*.un~
+Session.vim
+
+# Исключение Ansible-специфичных файлов
+ansible.cfg
+inventory/*
+!inventory/hosts
+roles/*/files/*
+roles/*/templates/*
+group_vars/*.yml
+host_vars/*.yml
+
+# Исключение локальных конфигураций
+.local*
+local.yml
+local_vars.yml
+
+# Исключение секретных переменных
+secrets.yml
+vars/secrets.yml
+group_vars/secrets.yml
+host_vars/secrets.yml
+
+# Исключение артефактов сборки
+dist/
+build/
+
+# Исключение виртуальных окружений
+venv/
+ENV/
+env/
+.venv/
+.ENV/
+.env/

@@ -1,0 +1,11 @@
+---
+# Название playbook: Основной playbook для запуска всех задач
+#запуск wsl ansible-playbook -i inventory site.yml
+- name: Выполнить базовую настройку системы
+  import_playbook: playbooks/common/base_setup.yml
+
+- name: Установить Docker
+  import_playbook: playbooks/docker/install.yml
+
+- name: Установить Nginx
+  import_playbook: playbooks/nginx/install.yml

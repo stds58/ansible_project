@@ -1,0 +1,96 @@
+---
+# Название playbook: Удаление Docker и Nginx
+- name: Удаление Docker и Nginx с удалённого хоста
+  hosts: remote  # Группа хостов из inventory
+  become: yes  # Использование sudo для выполнения команд
+  tasks:
+    # Остановка и отключение службы Docker
+    - name: Остановить и отключить службу Docker
+      service:
+        name: docker
+        state: stopped
+        enabled: no
+      ignore_errors: yes  # Игнорировать ошибки, если служба не запущена
+
+    # Остановка и отключение службы Nginx
+    - name: Остановить и отключить службу Nginx
+      service:
+        name: nginx
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    # Удаление пакета Docker CE
+    - name: Удалить пакет Docker CE
+      apt:
+        name: docker-ce
+        state: absent
+        purge: yes  # Полное удаление пакета и его конфигурационных файлов
+      when: ansible_os_family == "Debian"
+
+    # Удаление пакета Nginx
+    - name: Удалить пакет Nginx
+      apt:
+        name: nginx
+        state: absent
+        purge: yes
+      when: ansible_os_family == "Debian"
+
+    # Удаление репозитория Docker
+    - name: Удалить репозиторий Docker
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: absent
+      when: ansible_os_family == "Debian"
+
+    # Удаление GPG-ключа Docker
+    - name: Удалить GPG-ключ Docker
+      apt_key:
+        id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88  # ID ключа Docker
+        state: absent
+      when: ansible_os_family == "Debian"
+
+    # Удаление зависимостей (apt-utils, ca-certificates, curl)
+    - name: Удалить зависимости (apt-utils, ca-certificates, curl)
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: absent
+        purge: yes
+      when: "'purge_dependencies' in ansible_play_batch"  # Условие для удаления зависимостей
+
+    # Удаление пользователя из группы docker
+    - name: Удалить текущего пользователя из группы docker
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: no
+        state: present
+      ignore_errors: yes
+
+    # Удаление директории /var/lib/docker
+    - name: Удалить директорию /var/lib/docker
+      file:
+        path: /var/lib/docker
+        state: absent
+      ignore_errors: yes
+
+    # Удаление директории /etc/docker
+    - name: Удалить директорию /etc/docker
+      file:
+        path: /etc/docker
+        state: absent
+      ignore_errors: yes
+
+    # Удаление конфигурационных файлов Nginx
+    - name: Удалить конфигурационные файлы Nginx
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/nginx
+        - /var/log/nginx
+      ignore_errors: yes

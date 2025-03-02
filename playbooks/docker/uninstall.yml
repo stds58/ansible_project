@@ -1,0 +1,58 @@
+---
+# Название playbook: Удаление Docker
+- name: Удалить Docker
+  hosts: remote
+  become: yes  # Использование sudo для выполнения команд
+  tasks:
+    # Остановка и отключение службы Docker
+    - name: Остановить и отключить службу Docker
+      service:
+        name: docker
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    # Удаление пакета Docker CE
+    - name: Удалить пакет Docker CE
+      apt:
+        name: docker-ce
+        state: absent
+        purge: yes
+      when: ansible_os_family == "Debian"
+
+    # Удаление репозитория Docker
+    - name: Удалить репозиторий Docker
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: absent
+      when: ansible_os_family == "Debian"
+
+    # Удаление GPG-ключа Docker
+    - name: Удалить GPG-ключ Docker
+      apt_key:
+        id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+        state: absent
+      when: ansible_os_family == "Debian"
+
+    # Удаление директории /var/lib/docker
+    - name: Удалить директорию /var/lib/docker
+      file:
+        path: /var/lib/docker
+        state: absent
+      ignore_errors: yes
+
+    # Удаление директории /etc/docker
+    - name: Удалить директорию /etc/docker
+      file:
+        path: /etc/docker
+        state: absent
+      ignore_errors: yes
+
+    # Удаление пользователя из группы docker
+    - name: Удалить текущего пользователя из группы docker
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: no
+        state: present
+      ignore_errors: yes

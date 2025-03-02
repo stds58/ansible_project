@@ -1,0 +1,19 @@
+---
+# Название playbook: Установка Nginx
+- name: Установить Nginx
+  hosts: remote
+  become: yes  # Использование sudo для выполнения команд
+  tasks:
+    # Установка Nginx
+    - name: Установить Nginx
+      apt:
+        name: nginx
+        state: present
+      when: ansible_os_family == "Debian"
+
+    # Запуск и включение службы Nginx
+    - name: Запустить и включить службу Nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes

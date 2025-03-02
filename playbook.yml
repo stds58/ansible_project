@@ -1,0 +1,79 @@
+---
+# Название playbook: Установка Docker и Nginx
+- name: Установка Docker и Nginx на удалённый хост
+  hosts: remote  # Группа хостов из inventory
+  become: yes  # Использование sudo для выполнения команд
+  tasks:
+    # Обновление кэша APT (список пакетов)
+    - name: Обновить кэш APT
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"  # Выполнять только на системах семейства Debian
+
+    # Установка необходимых зависимостей для Docker
+    - name: Установить зависимости (apt-utils, ca-certificates, curl)
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+      when: ansible_os_family == "Debian"
+
+    # Добавление официального GPG-ключа Docker
+    - name: Добавить GPG-ключ Docker
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      when: ansible_os_family == "Debian"
+
+    # Добавление репозитория Docker
+    - name: Добавить репозиторий Docker
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+      when: ansible_os_family == "Debian"
+
+    # Установка Docker CE
+    - name: Установить Docker CE
+      apt:
+        name: docker-ce
+        state: present
+      when: ansible_os_family == "Debian"
+
+    # Запуск и включение службы Docker
+    - name: Запустить и включить службу Docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    # Добавление текущего пользователя в группу docker
+    - name: Добавить текущего пользователя в группу docker
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+      notify: Перезапуск Docker  # Уведомление для перезапуска службы Docker
+
+    # Установка Nginx
+    - name: Установить Nginx
+      apt:
+        name: nginx
+        state: present
+      when: ansible_os_family == "Debian"
+
+    # Запуск и включение службы Nginx
+    - name: Запустить и включить службу Nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+  # Handlers для перезапуска служб
+  handlers:
+    - name: Перезапуск Docker
+      service:
+        name: docker
+        state: restarted

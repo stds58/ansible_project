@@ -1,0 +1,7 @@
+---
+- name: Gather facts from remote servers
+  hosts: remote
+  tasks:
+    - name: Display all facts
+      debug:
+        var: ansible_facts

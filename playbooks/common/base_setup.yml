@@ -1,0 +1,22 @@
+---
+# Название playbook: Базовая настройка системы
+- name: Установка Docker и Nginx на удалённый хост
+  hosts: remote  # Группа хостов из inventory
+  become: yes  # Использование sudo для выполнения команд
+  tasks:
+    # Обновление кэша APT (список пакетов)
+    - name: Обновить кэш APT
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"  # Выполнять только на системах семейства Debian
+
+    # Установка необходимых зависимостей для Docker
+    - name: Установить зависимости (apt-utils, ca-certificates, curl)
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+      when: ansible_os_family == "Debian"
