@@ -4,6 +4,12 @@
   hosts: remote
   become: yes  # Использование sudo для выполнения команд
   tasks:
+    # Проверка, что Docker установлен
+    - name: Проверить, что Docker установлен
+      fail:
+        msg: "Docker не установлен. Запустите playbooks/docker/install.yml сначала."
+      when: "'docker_installed' not in ansible_facts"
+
     # Установка Nginx
     - name: Установить Nginx
       apt:
@@ -17,3 +23,8 @@
         name: nginx
         state: started
         enabled: yes
+
+    # Отметить, что Nginx установлен
+    - name: Установить факт завершения установки Nginx
+      set_fact:
+        nginx_installed: true

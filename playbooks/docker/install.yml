@@ -4,6 +4,12 @@
   hosts: remote
   become: yes  # Использование sudo для выполнения команд
   tasks:
+    # Проверка, что базовая настройка завершена
+    - name: Проверить, что базовая настройка завершена
+      fail:
+        msg: "Базовая настройка не завершена. Запустите playbooks/common/base_setup.yml сначала."
+      when: "'base_setup_complete' not in ansible_facts"
+
     # Добавление официального GPG-ключа Docker
     - name: Добавить GPG-ключ Docker
       apt_key:
@@ -39,6 +45,11 @@
         groups: docker
         append: yes
       notify: Перезапуск Docker
+
+    # Отметить, что Docker установлен
+    - name: Установить факт завершения установки Docker
+      set_fact:
+        docker_installed: true
 
   handlers:
     - name: Перезапуск Docker

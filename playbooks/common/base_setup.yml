@@ -8,6 +8,7 @@
     - name: Обновить кэш APT
       apt:
         update_cache: yes
+        upgrade: dist
       when: ansible_os_family == "Debian"  # Выполнять только на системах семейства Debian
 
     # Установка необходимых зависимостей для Docker
@@ -20,3 +21,8 @@
           - software-properties-common
         state: present
       when: ansible_os_family == "Debian"
+
+    # Отметить, что базовая настройка завершена
+    - name: Установить факт завершения базовой настройки
+      set_fact:
+        base_setup_complete: true

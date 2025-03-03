@@ -1,0 +1,53 @@
+---
+# Название playbook: Асинхронная установка Nginx
+- name: Установить Nginx (асинхронно)
+  hosts: remote
+  become: yes
+  tasks:
+    # Установка Nginx (асинхронно)
+    - name: Установить Nginx
+      apt:
+        name: nginx
+        state: present
+      async: 600  # Максимальное время выполнения (в секундах)
+      poll: 0     # Запуск в фоновом режиме
+      register: nginx_install_task
+      when: ansible_os_family == "Debian"
+
+    # Проверка статуса асинхронной задачи
+    - name: Дождаться завершения установки Nginx
+      async_status:
+        jid: "{{ nginx_install_task.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 30  # Количество попыток проверки статуса
+      delay: 30    # Интервал между проверками (в секундах)
+
+    # Проверка конфигурации Nginx
+    - name: Проверить конфигурацию Nginx
+      command: nginx -t
+      register: nginx_test_result
+      ignore_errors: yes
+
+    - name: Вывести результат проверки конфигурации Nginx
+      debug:
+        msg: "{{ nginx_test_result.stdout_lines }}"
+      when: nginx_test_result is defined
+
+    # Проверка занятости порта 80
+    - name: Проверить, занят ли порт 80
+      shell: netstat -tulpn | grep :80
+      register: port_check
+      ignore_errors: yes
+
+    - name: Вывести результат проверки порта
+      debug:
+        msg: "{{ port_check.stdout_lines }}"
+      when: port_check is defined and port_check.rc == 0
+
+    # Запуск и включение службы Nginx
+    - name: Запустить и включить службу Nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
