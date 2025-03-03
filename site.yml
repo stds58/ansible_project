@@ -1,11 +1,12 @@
 ---
 # Название playbook: Основной playbook для запуска всех задач
 #запуск wsl ansible-playbook -i inventory site.yml
+# wsl ansible-playbook -i inventory site_uninstall_all.yml -e "purge_dependencies=true"
 - name: Выполнить базовую настройку системы
-  import_playbook: playbooks/common/base_setup.yml
+  import_playbook: playbooks/common/base_setup_async.yml
 
 - name: Установить Docker
-  import_playbook: playbooks/docker/install.yml
+  import_playbook: playbooks/docker/install_async.yml
 
 - name: Установить Nginx
-  import_playbook: playbooks/nginx/install.yml
+  import_playbook: playbooks/nginx/install_async.yml

@@ -94,3 +94,25 @@
         - /etc/nginx
         - /var/log/nginx
       ignore_errors: yes
+
+    # Удаление конфигурационных файлов Nginx
+    - name: Удалить директорию с конфигурацией Nginx
+      file:
+        path: /etc/nginx
+        state: absent
+
+    # Удаление логов Nginx
+    - name: Удалить логи Nginx
+      file:
+        path: /var/log/nginx
+        state: absent
+
+    # Удаление общих зависимостей (опционально)
+    - name: Удалить общие зависимости
+      apt:
+        name:
+          - nginx-common
+          - nginx-core
+        state: absent
+        purge: yes
+      when: ansible_os_family == "Debian"

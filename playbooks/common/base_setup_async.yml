@@ -1,0 +1,47 @@
+---
+# Название playbook: Асинхронная базовая настройка системы
+- name: Выполнить базовую настройку системы (асинхронно)
+  hosts: remote
+  become: yes  # Использование sudo для выполнения команд
+  tasks:
+    # Обновление кэша APT и системы (асинхронно)
+    - name: Обновить кэш APT и выполнить обновление системы
+      apt:
+        update_cache: yes
+        upgrade: dist
+      async: 600  # Максимальное время выполнения (в секундах)
+      poll: 0     # Запуск в фоновом режиме
+      register: base_setup_task
+      when: ansible_os_family == "Debian"
+
+    # Проверка статуса асинхронной задачи
+    - name: Дождаться завершения обновления системы
+      async_status:
+        jid: "{{ base_setup_task.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 30  # Количество попыток проверки статуса
+      delay: 10    # Интервал между проверками (в секундах)
+
+    # Установка общих зависимостей (асинхронно)
+    - name: Установить общие зависимости (apt-utils, ca-certificates, curl)
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+      async: 600
+      poll: 0
+      register: dependencies_task
+      when: ansible_os_family == "Debian"
+
+    # Проверка статуса асинхронной задачи
+    - name: Дождаться завершения установки зависимостей
+      async_status:
+        jid: "{{ dependencies_task.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 30
+      delay: 10

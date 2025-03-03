@@ -1,0 +1,69 @@
+---
+# Название playbook: Асинхронная установка Docker
+- name: Установить Docker (асинхронно)
+  hosts: remote
+  become: yes
+  tasks:
+    # Добавление официального GPG-ключа Docker (асинхронно)
+    - name: Добавить GPG-ключ Docker
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      async: 600  # Максимальное время выполнения (в секундах)
+      poll: 0     # Запуск в фоновом режиме
+      register: gpg_task
+      when: ansible_os_family == "Debian"
+
+    # Проверка статуса асинхронной задачи
+    - name: Дождаться завершения добавления GPG-ключа
+      async_status:
+        jid: "{{ gpg_task.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 30  # Количество попыток проверки статуса
+      delay: 10    # Интервал между проверками (в секундах)
+
+    # Добавление репозитория Docker (асинхронно)
+    - name: Добавить репозиторий Docker
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+      async: 600
+      poll: 0
+      register: repo_task
+      when: ansible_os_family == "Debian"
+
+    # Проверка статуса асинхронной задачи
+    - name: Дождаться завершения добавления репозитория
+      async_status:
+        jid: "{{ repo_task.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 30
+      delay: 10
+
+    # Установка Docker CE (асинхронно)
+    - name: Установить Docker CE
+      apt:
+        name: docker-ce
+        state: present
+      async: 600
+      poll: 0
+      register: docker_install_task
+      when: ansible_os_family == "Debian"
+
+    # Проверка статуса асинхронной задачи
+    - name: Дождаться завершения установки Docker
+      async_status:
+        jid: "{{ docker_install_task.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 30
+      delay: 10
+
+    # Запуск и включение службы Docker
+    - name: Запустить и включить службу Docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
