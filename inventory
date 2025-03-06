@@ -15,6 +15,6 @@ ansible_winrm_transport=basic
 ansible_winrm_server_cert_validation=ignore
 
 [remote]
-webserver ansible_host=92.53.107.194 ansible_user=root ansible_ssh_private_key_file=~/.ssh/timeweb_cloud_20250226
+webserver ansible_host=193.108.115.240 ansible_user=root ansible_ssh_private_key_file=~/.ssh/timeweb_cloud_20250226
 
 

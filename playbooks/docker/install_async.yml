@@ -67,3 +67,57 @@
         name: docker
         state: started
         enabled: yes
+
+    # --- БЛОК УСТАНОВКИ PIP ---
+    - name: Установить pip (если отсутствует)
+      package:
+        name: python3-pip
+        state: present
+      when: ansible_os_family == "Debian"
+
+    # --- БЛОК УСТАНОВКИ PYTHON DOCKER SDK ---
+    - name: Установить Python Docker SDK
+      pip:
+        name: docker
+        state: present
+
+    # --- БЛОК АУТЕНТИФИКАЦИИ В DOCKER HUB ---
+    - name: Войти в Docker Hub
+      community.docker.docker_login:
+        username: "{{ lookup('env', 'DOCKER_USERNAME') }}"
+        password: "{{ lookup('env', 'DOCKER_PASSWORD') }}"
+
+    # --- БЛОК ЗАПУСКА POSTGRESQL ---
+    - name: Запустить PostgreSQL
+      community.docker.docker_container:
+        name: postgres-db
+        image: postgres:15
+        state: started
+        restart_policy: always
+        env:
+          POSTGRES_PASSWORD: "appuser"
+          POSTGRES_DB: "appuser"
+          POSTGRES_USER: "appuser"
+        ports:
+          - "5432:5432"
+        volumes:
+          - /opt/postgres/data:/var/lib/postgresql/data
+
+    # --- БЛОК ЗАПУСКА MYSQL ---
+    - name: Запустить MySQL
+      community.docker.docker_container:
+        name: mysql-db
+        image: mysql:8
+        state: started
+        restart_policy: always
+        env:
+          MYSQL_ROOT_PASSWORD: "appuser"
+          MYSQL_DATABASE: "appuser"
+          MYSQL_USER: "appuser"
+          MYSQL_PASSWORD: "appuser"
+        ports:
+          - "3306:3306"
+          - "33060:33060"  # Для X Protocol
+        volumes:
+          - /opt/mysql/data:/var/lib/mysql
+
