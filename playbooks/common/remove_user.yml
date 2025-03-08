@@ -1,0 +1,31 @@
+---
+- name: Remove user and their SSH keys
+  hosts: all
+  become: yes
+  vars:
+    username: "user1"  # Имя пользователя, которого нужно удалить
+  tasks:
+    - name: Ensure the user is removed
+      user:
+        name: "{{ username }}"
+        state: absent
+        remove: yes  # Удаляет домашнюю директорию пользователя
+
+    - name: Ensure the user's home directory is removed
+      file:
+        path: "/home/{{ username }}"
+        state: absent
+
+    - name: Ensure the user is removed from sudoers (if applicable)
+      lineinfile:
+        path: /etc/sudoers
+        regexp: "^{{ username }} ALL"
+        state: absent
+      ignore_errors: yes  # Игнорировать ошибки, если строка отсутствует
+
+    - name: Ensure the user is removed from groups
+      user:
+        name: "{{ username }}"
+        groups: []
+        append: no
+      ignore_errors: yes  # Игнорировать ошибки, если пользователь уже удалён

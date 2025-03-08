@@ -3,7 +3,7 @@
 #запуск wsl ansible-playbook -i inventory site.yml
 # wsl ansible-playbook -i inventory site_uninstall_all.yml -e "purge_dependencies=true"
 #
-# запуск wsl ansible-playbook -i inventory site.yml --ask-vault-pass --tags install
+# запуск wsl ansible-playbook -i inventory site.yml --ask-vault-pass --tags init postfix
 - name: Выполнить базовую настройку системы
   import_playbook: playbooks/common/base_setup_async.yml
 
@@ -17,7 +17,7 @@
 - name: Создать пользователя user1 и ssh ключ для него
   import_playbook: playbooks/common/create_user_with_ssh.yml
 
-  #ansible-playbook -i inventory manage_postfix.yml --tags install
-  #ansible-playbook -i inventory manage_postfix.yml --tags remove
+  #ansible-playbook -i inventory manage_postfix.yml --tags init postfix
+  #ansible-playbook -i inventory manage_postfix.yml --tags drop postfix
 - name: Поставить/удалить постфикс
   import_playbook: playbooks/postfix/manage_postfix.yml

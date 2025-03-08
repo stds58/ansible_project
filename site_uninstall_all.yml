@@ -1,12 +1,19 @@
 ---
 # Название playbook: Удаление Docker, Nginx и всех связанных компонентов
-# wsl ansible-playbook -i inventory site_uninstall_all.yml
+# wsl ansible-playbook -i inventory site_uninstall_all.yml --tags drop postfix
 # Если вы хотите удалить зависимости: wsl ansible-playbook -i inventory site_uninstall_all.yml -e "purge_dependencies=true"
 - name: Удалить Docker
   import_playbook: playbooks/docker/uninstall.yml
 
 - name: Удалить Nginx
   import_playbook: playbooks/nginx/uninstall.yml
+
+#--tags drop postfix
+- name: Удалить постфикс
+  import_playbook: playbooks/postfix/manage_postfix.yml
+
+- name: Удалить пользователя
+  import_playbook: playbooks/common/remove_user.yml
 
 - name: Удалить общие зависимости (опционально)
   hosts: remote

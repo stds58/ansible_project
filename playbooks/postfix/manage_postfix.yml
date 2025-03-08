@@ -7,17 +7,17 @@
       package:
         name: postfix
         state: present
-      when: "'install' in ansible_run_tags"
+      when: "'init postfix' in ansible_run_tags"
 
     - name: Start and enable Postfix service
       service:
         name: postfix
         state: started
         enabled: yes
-      when: "'install' in ansible_run_tags"
+      when: "'init postfix' in ansible_run_tags"
 
     - name: Remove Postfix
       package:
         name: postfix
         state: absent
-      when: "'remove' in ansible_run_tags"
+      when: "'drop postfix' in ansible_run_tags"
