@@ -1,0 +1,23 @@
+---
+- name: Manage Postfix mail server
+  hosts: remote
+  become: yes
+  tasks:
+    - name: Install Postfix
+      package:
+        name: postfix
+        state: present
+      when: "'install' in ansible_run_tags"
+
+    - name: Start and enable Postfix service
+      service:
+        name: postfix
+        state: started
+        enabled: yes
+      when: "'install' in ansible_run_tags"
+
+    - name: Remove Postfix
+      package:
+        name: postfix
+        state: absent
+      when: "'remove' in ansible_run_tags"

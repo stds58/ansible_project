@@ -1,0 +1,46 @@
+---
+- name: Create user and configure SSH key
+  hosts: remote
+  become: yes
+  vars_files:
+    - ../../user1_key.yml  # Файл с зашифрованными данными
+  tasks:
+    - name: Create user 'user1'
+      user:
+        name: user1
+        state: present
+        shell: /bin/bash
+        create_home: yes
+
+    - name: Ensure .ssh directory exists for user1
+      file:
+        path: /home/user1/.ssh
+        state: directory
+        owner: user1
+        group: user1
+        mode: '0700'
+
+    - name: Write the private SSH key to /home/user1/.ssh/id_rsa
+      copy:
+        dest: /home/user1/.ssh/id_rsa
+        content: "{{ user_ssh_private_key }}"
+        owner: user1
+        group: user1
+        mode: '0600'
+
+    - name: Write the public SSH key to /home/user1/.ssh/id_rsa.pub
+      copy:
+        dest: /home/user1/.ssh/id_rsa.pub
+        content: "{{ user_ssh_public_key }}"
+        owner: user1
+        group: user1
+        mode: '0644'
+
+    - name: Add public key to authorized_keys
+      lineinfile:
+        path: /home/user1/.ssh/authorized_keys
+        line: "{{ user_ssh_public_key }}"
+        create: yes
+        owner: user1
+        group: user1
+        mode: '0600'
